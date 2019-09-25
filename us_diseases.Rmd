@@ -1,0 +1,253 @@
+---
+title: "intro_ggplot2"
+output: html_document
+---
+
+### Set up
+
+First things first, change these settings
+
+Tools -> Global options -> R Markdown -> Uncheck "Show output inline for all R Markdown documents"
+
+
+### R Packages
+- "Packages" are add-ons to plain R
+
+- These installation commands are commented out because I've already installed these packages in this workspace
+
+- If you're on your own computer, delete the # in front of each one and run them all
+
+- To run a command in Rstudio, have your cursor on the line you want to run and either hit the Run green arrow or hit ctrl-enter
+
+
+- To run a whole gray chunk (like the one below), click the green arrow at the top of the chunk
+
+- Things in chunks are code, things outside of chunks are for text and notes
+
+```{r packages}
+
+#Necessary packages
+#install.packages("tidyverse") # Tools for working with data
+#install.packages("dslabs") # Our example dataset
+
+#Less critical packages for single examples, don't worry about if they won't install
+#install.packages("ggridges") # A type of plot
+#install.packages("cowplot") # Tools for changing plot aesthetics
+#install.packages("skimr") # For summary statistics of a data table
+#install.packages("gganimate") # For animations
+#install.packages("gifski") # For animations
+#install.packages("png") # For animations
+#install.packages("ggplotly") # For interactivity example
+
+
+library(tidyverse)
+library(dslabs)
+library(ggridges)
+library(cowplot)
+library(skimr)
+library(gganimate)
+library(ggplotly)
+library(RColorBrewer)
+theme_set(theme_cowplot())
+```
+
+- We'll start with a basic plot using a built-in example dataset (called mpg)
+
+- Run this the code in the chunk below to get a preview of this data in the Console
+
+```{r}
+mpg
+```
+
+
+- To see the whole dataset, use the function View() to pop it into a preview tab
+```{r}
+View(mpg)
+```
+
+- To get a description of your data
+```{r}
+skim(mpg)
+```
+
+
+- The template for making a graph is:
+
+ggplot(data = DATASETNAME, mapping = aes(x = XCOLUMN, y = YCOLUMN)) + 
+   geom_TYPEOFGRAPH() 
+   
+Where things in all caps are variables that you change. aes stands for "aesthetics", this is where you tell ggplot what column in your data is the x axis, what is the y axis
+   
+For the mpg dataset, we can plot a scatterplot of the columns for engine displacement `displ` vs highway miles per gallon `hwy`
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point()
+```
+
+
+You can also define what column describes color
+
+We can color our scatterplot by what class of car each observation is
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) + 
+  geom_point()
+
+```
+
+Or point shape
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class, shape = class)) + 
+  geom_point()
+```
+
+We can add another geom to fit a smooth curve to our data
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() +
+  geom_smooth()
+```
+
+We can break into one subgraph per vehicle class
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() +
+  facet_wrap(~class)
+```
+
+Or animate based on a column
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = cyl)) + 
+  geom_point() +
+  transition_manual(class) +
+  labs(title = 'Car class: {current_frame}')
+
+```
+
+Or create an interactive plot
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, label = class)) + 
+  geom_point() 
+
+ggplotly()
+```
+
+Pretty much any characteristic of a plot you can change by adding on more lines to your ggplot statement
+Googling a template like "ggplot change color scale", or "ggplot change x axis range" will generally lead to answers
+
+
+# For the code-along portion of this, I'll be replicating a famous plot of measles incidence before and after the vaccine was introduced in 1963
+
+First, the dslabs package contains the dataset used for this infographic
+```{r}
+data(us_contagious_diseases)
+us_contagious_diseases <- as_tibble(us_contagious_diseases)
+```
+
+Take a look
+```{r}
+us_contagious_diseases
+```
+
+
+Skim shows that there are 7 diseases and data on 51 states (including D.C.)
+```{r}
+skim(us_contagious_diseases)
+```
+
+Introducing the pipe (%>%) aka "and then" for exploratory data analysis
+With the pipe, you can string together analysis steps
+```{r}
+us_contagious_diseases %>% 
+  select(disease) %>%
+  unique
+
+# Take the data set, and then...
+# select a specific column, and then ...
+# Get unique values of that column
+
+```
+
+
+Get just rows for Measles using a filter, and save as a new variable called measles_dat
+```{r}
+measles_dat <- us_contagious_diseases %>%
+  filter(disease == "Measles")
+
+```
+
+Add on a new column for rate by using the mutate function
+```{r}
+measles_dat <- measles_dat %>%
+  mutate(rate = (count / population) * 10000 * (52 / weeks_reporting))
+ 
+measles_dat
+```
+
+Now set up the ggplot
+```{r}
+ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
+  geom_tile()
+```
+
+That's one ugly plot, now to make it nice
+Start with changing the color scale
+```{r}
+ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
+  geom_tile() +
+  scale_fill_gradientn(colors = c("white", "blue"))
+```
+
+Missing data shows as grey blocks, let's make them less obtrusive with na.value
+
+How was missing data handled on the original plot?
+```{r}
+ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
+  geom_tile() +
+  scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95")
+```
+
+We need to add a vertical line where vaccine was introduced
+```{r}
+ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
+  geom_tile() +
+  scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95") +
+  geom_vline(xintercept = 1963, col = "black") 
+
+```
+
+Now add accessory text
+```{r}
+
+ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
+  geom_tile() +
+  scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95", name = "Cases per\n10,000 people") +
+  geom_vline(xintercept = 1963, col = "black") +
+  ggtitle("Measles") +
+  ylab("") +
+  xlab("") +  
+  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0) 
+```
+
+
+In original, states were ordered A-Z top to bottom
+We can use fct_ tools to change plot ordered
+```{r}
+ggplot(data = measles_dat, aes(x = year, y = fct_rev(state), fill = rate)) + 
+  geom_tile() +
+  scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95", name = "Cases per\n10,000 people") +
+  geom_vline(xintercept = 1963, col = "black") +
+  ggtitle("Measles") +
+  ylab("") +
+  xlab("") +  
+  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0) 
+```
+
+
+```{r}
+
+
+
+
+```
+
