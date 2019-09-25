@@ -37,7 +37,7 @@ Tools -> Global options -> R Markdown -> Uncheck "Show output inline for all R M
 #install.packages("gganimate") # For animations
 #install.packages("gifski") # For animations
 #install.packages("png") # For animations
-#install.packages("ggplotly") # For interactivity example
+#install.packages("plotly") # For interactivity example
 
 
 library(tidyverse)
@@ -46,7 +46,7 @@ library(ggridges)
 library(cowplot)
 library(skimr)
 library(gganimate)
-library(ggplotly)
+library(plotly)
 library(RColorBrewer)
 theme_set(theme_cowplot())
 ```
