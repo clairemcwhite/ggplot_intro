@@ -5,8 +5,7 @@ output: html_document
 
 ### Set up
 
-First things first, change these settings
-
+First things first, change these settings to make plots show up in the right pane
 Tools -> Global options -> R Markdown -> Uncheck "Show output inline for all R Markdown documents"
 
 
@@ -14,44 +13,35 @@ Tools -> Global options -> R Markdown -> Uncheck "Show output inline for all R M
 - "Packages" are add-ons to plain R
 
 - These installation commands are commented out because I've already installed these packages in this workspace
-
-- If you're on your own computer, delete the # in front of each one and run them all
-
-- To run a command in Rstudio, have your cursor on the line you want to run and either hit the Run green arrow or hit ctrl-enter
-
-
+- If you're on your own local RStudio, delete the # in front of each one and run them all
+- To run a command in Rstudio, have your cursor on the line you want to run and either hit the Run green arrow or hit ctrl(or command)-enter
 - To run a whole gray chunk (like the one below), click the green arrow at the top of the chunk
-
-- Things in chunks are code, things outside of chunks are for text and notes
+- Things in gray chunks are code, things outside of chunks are for text and notes
 
 ```{r packages}
+# Necessary packages
+# install.packages("tidyverse") 
+# install.packages("dslabs")
 
-#Necessary packages
-#install.packages("tidyverse") # Tools for working with data
-#install.packages("dslabs") # Our example dataset
-
-#Less critical packages for single examples, don't worry about if they won't install
-#install.packages("ggridges") # A type of plot
-#install.packages("cowplot") # Tools for changing plot aesthetics
-#install.packages("skimr") # For summary statistics of a data table
-#install.packages("gganimate") # For animations
-#install.packages("gifski") # For animations
-#install.packages("png") # For animations
-#install.packages("plotly") # For interactivity example
+# Less critical packages for single examples, don't worry about if they won't install
+# install.packages("cowplot") 
+# install.packages("skimr") 
+# install.packages("gganimate")
+# install.packages("gifski") 
+# install.packages("png")
+# install.packages("plotly") 
 
 
-library(tidyverse)
-library(dslabs)
-library(ggridges)
-library(cowplot)
-library(skimr)
-library(gganimate)
-library(plotly)
-library(RColorBrewer)
-theme_set(theme_cowplot())
+library(tidyverse) # exploratory data tools
+library(dslabs) # Contains the diseases data set
+library(cowplot) # Tools for improving plots
+library(skimr) # For summaries of data
+library(gganimate) # For animations
+library(plotly) # For interactive plots
+theme_set(theme_cowplot()) # Set plot theme from cowplot
 ```
 
-- We'll start with a basic plot using a built-in example dataset (called mpg)
+- We'll start with a basic plot using an example dataset (called mpg)
 
 - Run this the code in the chunk below to get a preview of this data in the Console
 
@@ -60,18 +50,12 @@ mpg
 ```
 
 
-- To see the whole dataset, use the function View() to pop it into a preview tab
-```{r}
-View(mpg)
-```
-
 - To get a description of your data
 ```{r}
 skim(mpg)
 ```
 
-
-- The template for making a graph is:
+- The template for making a plot is:
 
 ggplot(data = DATASETNAME, mapping = aes(x = XCOLUMN, y = YCOLUMN)) + 
    geom_TYPEOFGRAPH() 
@@ -136,9 +120,13 @@ Pretty much any characteristic of a plot you can change by adding on more lines 
 Googling a template like "ggplot change color scale", or "ggplot change x axis range" will generally lead to answers
 
 
-# For the code-along portion of this, I'll be replicating a famous plot of measles incidence before and after the vaccine was introduced in 1963
+### For the code-along portion of this, I'll be replicating a plot of measles incidence before and after the vaccine was introduced in 1963
+
+https://pbs.twimg.com/media/Dr1EUOjUcAcTCsj?format=jpg&name=large
+http://graphics.wsj.com/infectious-diseases-and-vaccines/?mc_cid=711ddeb86e
 
 First, the dslabs package contains the dataset used for this infographic
+the `as_tibble` gets the data in a more workable format for us
 ```{r}
 data(us_contagious_diseases)
 us_contagious_diseases <- as_tibble(us_contagious_diseases)
@@ -179,7 +167,7 @@ measles_dat <- us_contagious_diseases %>%
 Add on a new column for rate by using the mutate function
 ```{r}
 measles_dat <- measles_dat %>%
-  mutate(rate = (count / population) * 10000 * (52 / weeks_reporting))
+  mutate(rate = (10000 * count/population) * (52/weeks_reporting))
  
 measles_dat
 ```
@@ -192,13 +180,15 @@ ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) +
 
 That's one ugly plot, now to make it nice
 Start with changing the color scale
+
+What was the color scale on the original plot? It's strange, right?
 ```{r}
 ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
   geom_tile() +
   scale_fill_gradientn(colors = c("white", "blue"))
 ```
 
-Missing data shows as grey blocks, let's make them less obtrusive with na.value
+Missing data shows as grey blocks. It's not ideal, but let's just make them less obtrusive with na.value
 
 How was missing data handled on the original plot?
 ```{r}
@@ -212,42 +202,44 @@ We need to add a vertical line where vaccine was introduced
 ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
   geom_tile() +
   scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95") +
-  geom_vline(xintercept = 1963, col = "black") 
+  geom_vline(xintercept = 1963, color = "black") 
 
 ```
 
 Now add accessory text
 ```{r}
-
 ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) + 
   geom_tile() +
   scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95", name = "Cases per\n10,000 people") +
-  geom_vline(xintercept = 1963, col = "black") +
+  geom_vline(xintercept = 1963, color = "black") +
   ggtitle("Measles") +
   ylab("") +
   xlab("") +  
-  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0) 
+  geom_text(x = 1963 + 1, y = 50.5, label =  label = "Vaccine introduced", size = 5, hjust = 0) 
 ```
 
 
-In original, states were ordered A-Z top to bottom
-We can use fct_ tools to change plot ordered
+In the original, states were ordered A-Z top to bottom
+We can use fct_ tools to change plot orders
 ```{r}
 ggplot(data = measles_dat, aes(x = year, y = fct_rev(state), fill = rate)) + 
   geom_tile() +
   scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95", name = "Cases per\n10,000 people") +
-  geom_vline(xintercept = 1963, col = "black") +
+  geom_vline(xintercept = 1963, color = "black") +
   ggtitle("Measles") +
   ylab("") +
   xlab("") +  
-  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0) 
-```
-
-
-```{r}
-
-
-
+  geom_text(x = 1963 + 1, y = 50.5, label =  label = "Vaccine introduced", size = 5, hjust = 0) 
 
 ```
+
+
+
+There are still things that could be changed to make a more polished final plot, but this is getting pretty close
+
+Sources:
+
+- mpg example adapted from the Rstudio cloud ggplot2 primer
+
+- Recreation of measles plot adapted from https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/ by Rafael Irizarry
 
