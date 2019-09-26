@@ -200,7 +200,7 @@ ggplot(data = measles_dat, aes(x = year, y = state, fill = rate)) +
   ggtitle("Measles") +
   ylab("") +
   xlab("") +  
-  geom_text(x = 1963 + 1, y = 50.5, label =  label = "Vaccine introduced", size = 5, hjust = 0) 
+  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0)
 ```
 
 
@@ -214,17 +214,41 @@ ggplot(data = measles_dat, aes(x = year, y = fct_rev(state), fill = rate)) +
   ggtitle("Measles") +
   ylab("") +
   xlab("") +  
-  geom_text(x = 1963 + 1, y = 50.5, label =  label = "Vaccine introduced", size = 5, hjust = 0) 
+  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0)
 
 ```
 
+Now save the plot to a variable, and save to a file
+Adjust width and height in ggsave until figure is what you want
+```{r}
+measles_plt <- ggplot(data = measles_dat, aes(x = year, y = fct_rev(state), fill = rate)) + 
+  geom_tile() +
+  scale_fill_gradientn(colors = c("white", "blue"), na.value = "grey95", name = "Cases per\n10,000 people") +
+  geom_vline(xintercept = 1963, color = "black") +
+  ggtitle("Measles") +
+  ylab("") +
+  xlab("") +  
+  annotate(geom = "text", x = 1963 + 1, y = 50.5, label = "Vaccine introduced", size = 5, hjust = 0)
+
+
+
+ggsave("measlesplot.pdf", measles_plt, height= 8, width = 10 device= "pdf", units = "in")
+```
 
 
 There are still things that could be changed to make a more polished final plot, but this is getting pretty close
+
+Finally, you'll wan't to know how to save data and load data
+```{r}
+measles_dat %>% write_csv("measles_data.csv")
+new <- read_csv("measles_data.csv")
+```
+
 
 Sources:
 
 - mpg example adapted from the Rstudio cloud ggplot2 primer
 
 - Recreation of measles plot adapted from https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/ by Rafael Irizarry
+
 
