@@ -10,28 +10,13 @@ Tools -> Global options -> R Markdown -> Uncheck "Show output inline for all R M
 
 
 ### R Packages
-- "Packages" are add-ons to plain R
-
-- These installation commands are commented out because I've already installed these packages in this workspace
-- If you're on your own local RStudio, delete the # in front of each one and run them all
+- "Packages" are add-ons to plain R, and must be loaded for each session with the function `library()`
 - To run a command in Rstudio, have your cursor on the line you want to run and either hit the Run green arrow or hit ctrl(or command)-enter
 - To run a whole gray chunk (like the one below), click the green arrow at the top of the chunk
 - Things in gray chunks are code, things outside of chunks are for text and notes
+- I've pre-installed these packages, but when you want to install a new packages, the command is ex. `install.packages("tidyverse")` or you can use the Rstudio interface Tools -> Install packages
 
 ```{r packages}
-# Necessary packages
-# install.packages("tidyverse") 
-# install.packages("dslabs")
-
-# Less critical packages for single examples, don't worry about if they won't install
-# install.packages("cowplot") 
-# install.packages("skimr") 
-# install.packages("gganimate")
-# install.packages("gifski") 
-# install.packages("png")
-# install.packages("plotly") 
-
-
 library(tidyverse) # exploratory data tools
 library(dslabs) # Contains the diseases data set
 library(cowplot) # Tools for improving plots
